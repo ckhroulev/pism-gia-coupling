@@ -1,5 +1,35 @@
 ### Coupling PISM to a GIA model
 
+#### Representing spatially-variable sea level by modifying bed topography
+
+PISM supports spatially-variable bed topography but does *not* support
+spatially-variable sea level elevation. This is a problem, since GIA
+produces *both* the topography and sea level, and the sea level is not
+uniform in general.
+
+Note, though, that all uses of the sea level elevation in PISM involve
+bed topography or the flotation criterion.
+
+So, at flotation we want to have
+
+    bed(x,y) = sea_level(x,y) - rho_ice / rho_ocean * ice_thickness(x,y),
+
+but PISM does not support `sea_level(x,y)`.
+
+Luckily this can be re-written as
+
+    bed(x,y) - sea_level(x,y) = 0 - rho_ice / rho_ocean * ice_thickness(x,y)
+
+We define
+
+    bed_modified(x,y) = bed(x,y) - sea_level(x,y)
+
+and use
+
+    bed_modified(x,y) = sea_level - rho_ice / rho_ocean * ice_thickness(x,y),
+
+which PISM can handle without issues.
+
 #### Data transfer: PISM to GIA
 
 We can track changes in the load used by the GIA model using modeled
@@ -70,8 +100,20 @@ the following
  cdo remap,gia_grid.nc,pism_to_gia_weights.nc ice_thickness.nc ice_thickness_latlon.nc
  # replace missing values with zeros
  cdo setmisstoc,0 ice_thickness_latlon.nc ice_thickness_latlon_filled.nc
+ nc_to_ascii.py ice_thickness_latlon_filled.nc ice_thickness.xyz
 ```
+
+`nc_to_ascii.py` is not implemented yet.
+
+Now we need to combine this field with thicknesses of other ice
+sheets, compute load changes, etc.
 
 #### Data transfer: GIA to PISM
 
-FIXME
+```
+ ascii_to_nc.py bed_topography.xyz topg.nc
+ cdo remap,pism_output.nc,gia_to_pism_weights.nc topg.nc topg_pism.nc
+ # compute topography changes
+ # apply them to the undeformed ("present-day") topography to recover
+ # small features not resolved on the coarse GIA grid
+```
