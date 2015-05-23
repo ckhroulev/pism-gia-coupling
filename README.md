@@ -30,6 +30,10 @@ and use
 
 which PISM can handle without issues.
 
+Note also that the bed depth computed using `bed_modified` behaves the
+way we would expect: an increase in sea level corresponds to an
+increase of the water depth (`0 - bed_modified`).
+
 #### Data transfer: PISM to GIA
 
 We can track changes in the load used by the GIA model using modeled
