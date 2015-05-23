@@ -26,7 +26,7 @@ We define
 
 and use
 
-    bed_modified(x,y) = sea_level - rho_ice / rho_ocean * ice_thickness(x,y),
+    bed_modified(x,y) = 0 - rho_ice / rho_ocean * ice_thickness(x,y),
 
 which PISM can handle without issues.
 
